@@ -3,39 +3,36 @@
 <head>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
-        import { getDatabase, ref, set, get, onValue } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-database.js";
+        import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-database.js";
 
         const firebaseConfig = {
-            apiKey: "AIzaSyCAV_6ofvK-eAjr4liZBqGKktvUPLsgDn0",
-            authDomain: "logger-4fd30.firebaseapp.com",
-            databaseURL: "https://logger-4fd30-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "logger-4fd30",
-            storageBucket: "logger-4fd30.firebasestorage.app",
-            messagingSenderId: "227574895475",
-            appId: "1:227574895475:web:e10590d7be6f8565f72b06"
-        };
+  apiKey: "AIzaSyCAV_6ofvK-eAjr4liZBqGKktvUPLsgDn0",
+  authDomain: "logger-4fd30.firebaseapp.com",
+  databaseURL: "https://logger-4fd30-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "logger-4fd30",
+  storageBucket: "logger-4fd30.firebasestorage.app",
+  messagingSenderId: "227574895475",
+  appId: "1:227574895475:web:e10590d7be6f8565f72b06"
+};
 
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
-
-        const counterRef = ref(database, 'waterIntakeCount');
+        const counterRef = ref(database, 'logger');
 
         let count = 0;
 
+        // Real-time data sync
+        onValue(counterRef, (snapshot) => {
+            count = snapshot.val() || 0;
+            updateCounter();
+        });
+
         function increaseCount() {
-            get(counterRef).then((snapshot) => {
-                count = snapshot.val() || 0;
-                count++;
-                set(counterRef, count);
-            });
+            set(counterRef, count + 1);
         }
 
         function decreaseCount() {
-            get(counterRef).then((snapshot) => {
-                count = snapshot.val() || 0;
-                if (count > 0) count--;
-                set(counterRef, count);
-            });
+            if (count > 0) set(counterRef, count - 1);
         }
 
         function resetCount() {
@@ -45,12 +42,6 @@
         function updateCounter() {
             document.getElementById('counter').innerText = count;
         }
-
-        // Sync in real-time
-        onValue(counterRef, (snapshot) => {
-            count = snapshot.val() || 0;
-            updateCounter();
-        });
     </script>
 
     <meta charset="UTF-8">
