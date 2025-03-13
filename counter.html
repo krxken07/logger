@@ -4,7 +4,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
         import { getDatabase, ref, set, get, onValue } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-database.js";
-      
+
         const firebaseConfig = {
           apiKey: "YOUR_API_KEY",
           authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
@@ -14,42 +14,45 @@
           messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
           appId: "YOUR_APP_ID"
         };
-      
+
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
-      
+
         const counterRef = ref(database, 'waterIntakeCount');
-      
+
         let count = 0;
-      
+
         function increaseCount() {
-          count++;
-          set(counterRef, count);
-          updateCounter();
+            get(counterRef).then((snapshot) => {
+                count = snapshot.val() || 0;
+                count++;
+                set(counterRef, count);
+            });
         }
-      
+
         function decreaseCount() {
-          if (count > 0) count--;
-          set(counterRef, count);
-          updateCounter();
+            get(counterRef).then((snapshot) => {
+                count = snapshot.val() || 0;
+                if (count > 0) count--;
+                set(counterRef, count);
+            });
         }
-      
+
         function resetCount() {
-          count = 0;
-          set(counterRef, count);
-          updateCounter();
+            set(counterRef, 0);
         }
-      
+
         function updateCounter() {
-          document.getElementById('counter').innerText = count;
+            document.getElementById('counter').innerText = count;
         }
-      
+
         // Sync in real-time
         onValue(counterRef, (snapshot) => {
-          count = snapshot.val() || 0;
-          updateCounter();
+            count = snapshot.val() || 0;
+            updateCounter();
         });
-      </script>
+    </script>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pending Kiss Counter</title>
@@ -100,30 +103,5 @@
         <button onclick="decreaseCount()">Undo</button>
         <button onclick="resetCount()">Reset</button>
     </div>
-
-    <script>
-        let count = 0;
-
-        function increaseCount() {
-            count++;
-            updateCounter();
-        }
-
-        function decreaseCount() {
-            if (count > 0) {
-                count--;
-            }
-            updateCounter();
-        }
-
-        function resetCount() {
-            count = 0;
-            updateCounter();
-        }
-
-        function updateCounter() {
-            document.getElementById('counter').innerText = count;
-        }
-    </script>
 </body>
 </html>
