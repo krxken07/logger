@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pending Kiss Counter</title>
+    <style>
+        body {
+            display: flex;
+            height: 100vh;
+            justify-content: center;
+            align-items: center;
+            background-color: #000000;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            background: #cbcbcb;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            padding: 30px;
+            text-align: center;
+        }
+        h1 {
+            color: #000000;
+        }
+        .counter {
+            font-size: 48px;
+            color: #000000;
+            margin: 20px 0;
+        }
+        button {
+            background-color: #000000;
+            color: #ffffff;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 18px;
+        }
+        button:hover {
+            background-color: #9d6ec8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Pending Kisses Log</h1>
+        <div class="counter" id="counter">0</div>
+        <button onclick="increaseCount()">Add Kiss</button>
+        <button onclick="decreaseCount()">Undo</button>
+        <button onclick="resetCount()">Reset</button>
+    </div>
+
+    <script>
+        let count = 0;
+
+        function increaseCount() {
+            count++;
+            updateCounter();
+        }
+
+        function decreaseCount() {
+            if (count > 0) {
+                count--;
+            }
+            updateCounter();
+        }
+
+        function resetCount() {
+            count = 0;
+            updateCounter();
+        }
+
+        function updateCounter() {
+            document.getElementById('counter').innerText = count;
+        }
+    </script>
+</body>
+</html>
