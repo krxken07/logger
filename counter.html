@@ -1,98 +1,85 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
-        import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-database.js";
-
-        const firebaseConfig = {
-        apiKey: "AIzaSyCAV_6ofvK-eAjr4liZBqGKktvUPLsgDn0",
-        authDomain: "logger-4fd30.firebaseapp.com",
-        databaseURL: "https://logger-4fd30-default-rtdb.asia-southeast1.firebasedatabase.app",
-        projectId: "logger-4fd30",
-        storageBucket: "logger-4fd30.firebasestorage.app",
-        messagingSenderId: "227574895475",
-        appId: "1:227574895475:web:e10590d7be6f8565f72b06"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const database = getDatabase(app);
-        const counterRef = ref(database, 'logger');
-
-        let count = 0;
-
-        // Real-time data sync
-        onValue(counterRef, (snapshot) => {
-            count = snapshot.val() || 0;
-            updateCounter();
-        });
-
-        function increaseCount() {
-            set(counterRef, count + 1);
-        }
-
-        function decreaseCount() {
-            if (count > 0) set(counterRef, count - 1);
-        }
-
-        function resetCount() {
-            set(counterRef, 0);
-        }
-
-        function updateCounter() {
-            document.getElementById('counter').innerText = count;
-        }
-    </script>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pending Kiss Counter</title>
     <style>
-        body {
-            display: flex;
-            height: 100vh;
-            justify-content: center;
-            align-items: center;
-            background-color: #000000;
-            font-family: Arial, sans-serif;
-        }
-        .container {
-            background: #cbcbcb;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-            padding: 30px;
-            text-align: center;
-        }
-        h1 {
-            color: #000000;
-        }
-        .counter {
-            font-size: 48px;
-            color: #000000;
-            margin: 20px 0;
-        }
-        button {
-            background-color: #000000;
-            color: #ffffff;
-            border: none;
-            padding: 10px 20px;
-            margin: 5px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 18px;
-        }
-        button:hover {
-            background-color: #9d6ec8;
+        /* ... (keep existing styles the same) ... */
+        button:disabled {
+            background-color: #666666;
+            cursor: not-allowed;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Pending Kisses Log</h1>
+        <h1>Pending Kisses Counter</h1>
         <div class="counter" id="counter">0</div>
-        <button onclick="increaseCount()">Add Kiss</button>
-        <button onclick="decreaseCount()">Undo</button>
-        <button onclick="resetCount()">Reset</button>
+        <button id="addBtn">Add Kiss</button>
+        <button id="undoBtn">Undo</button>
+        <button id="resetBtn">Reset</button>
     </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
+        import { getDatabase, ref, runTransaction } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCAV_6ofvK-eAjr4liZBqGKktvUPLsgDn0",
+            authDomain: "logger-4fd30.firebaseapp.com",
+            databaseURL: "https://logger-4fd30-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "logger-4fd30",
+            storageBucket: "logger-4fd30.firebasestorage.app",
+            messagingSenderId: "227574895475",
+            appId: "1:227574895475:web:e10590d7be6f8565f72b06"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        const counterRef = ref(database, 'counters/kisses');
+
+        // DOM elements
+        const counterEl = document.getElementById('counter');
+        const addBtn = document.getElementById('addBtn');
+        const undoBtn = document.getElementById('undoBtn');
+        const resetBtn = document.getElementById('resetBtn');
+
+        // Event listeners
+        addBtn.addEventListener('click', () => modifyCount(1));
+        undoBtn.addEventListener('click', () => modifyCount(-1));
+        resetBtn.addEventListener('click', resetCount);
+
+        // Real-time listener
+        onValue(counterRef, (snapshot) => {
+            const count = snapshot.val() || 0;
+            counterEl.textContent = count;
+            undoBtn.disabled = count <= 0;
+        }, (error) => {
+            console.error("Database error:", error);
+            alert("Error connecting to database!");
+        });
+
+        async function modifyCount(change) {
+            try {
+                await runTransaction(counterRef, (currentCount) => {
+                    const newCount = (currentCount || 0) + change;
+                    return newCount >= 0 ? newCount : currentCount;
+                });
+            } catch (error) {
+                console.error("Transaction failed:", error);
+                alert("Failed to update count!");
+            }
+        }
+
+        async function resetCount() {
+            try {
+                await runTransaction(counterRef, () => 0);
+            } catch (error) {
+                console.error("Reset failed:", error);
+                alert("Failed to reset count!");
+            }
+        }
+    </script>
 </body>
 </html>
